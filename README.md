@@ -7,6 +7,22 @@ W16 extends the W15 assistant with a bounded agentic loop. The W15 `POST /chat` 
 
 Further detail: [`docs/W16_AGENT_DESIGN.md`](docs/W16_AGENT_DESIGN.md) and [`docs/W16_ARCHITECTURE.md`](docs/W16_ARCHITECTURE.md).
 
+<!-- W16-DELIVERABLES -->
+## W16 Deliverables — Where to Find Them
+
+| # | Deliverable | Location in this repository |
+| --- | --- | --- |
+| 1 | **Updated source code** | |
+| | W15 assistant (unchanged, `POST /chat`) | [`backend/services/chat_service.py`](backend/services/chat_service.py), [`backend/routing/router.py`](backend/routing/router.py), [`backend/rag/retrieval.py`](backend/rag/retrieval.py), [`frontend/app.py`](frontend/app.py) |
+| | New agentic feature (`POST /agent/chat`) | [`backend/agents/`](backend/agents) (agent, state, schemas, executor, evidence, prompts), [`backend/services/agentic_service.py`](backend/services/agentic_service.py), [`backend/tools/`](backend/tools), endpoint wired in [`backend/main.py`](backend/main.py) |
+| 2 | **Updated README** | This file |
+| | Documentation requirements a, b, c | [a. Context Engineering Technique](#a-context-engineering-technique), [b. Agentic Pattern](#b-agentic-pattern), [c. Evaluation Harness](#c-evaluation-harness) |
+| | Additional requirements (Skill vs Agent, token accounting, failure injection, tool vs agent boundary) | [Additional Requirements](#additional-requirements) |
+| 3 | **Updated architecture diagram** | [`docs/architecture.png`](docs/architecture.png) shows the agentic loop; single-agent design, so no multi-agent coordination structure. Text version: [`docs/W16_ARCHITECTURE.md`](docs/W16_ARCHITECTURE.md) |
+| 4 | **Evaluation harness** | |
+| | Source code | [`eval/harness.py`](eval/harness.py), [`eval/metrics.py`](eval/metrics.py), [`eval/dataset.json`](eval/dataset.json) (10 cases), [`eval/failure_injection.py`](eval/failure_injection.py) |
+| | Results report | [`eval/RESULTS.md`](eval/RESULTS.md) (summary table), [`eval/results.json`](eval/results.json) (per-case trajectories), [`eval/failure_results.json`](eval/failure_results.json) (failure-injection outcomes), [`eval/w15_w16_comparison.json`](eval/w15_w16_comparison.json) |
+| | Additional design write-up | [`docs/W16_AGENT_DESIGN.md`](docs/W16_AGENT_DESIGN.md) |
 ## Agentic Feature
 
 **Cross-source verification.** The agent answers queries that need order data, product data, return eligibility and policy knowledge, choosing each next action from what it has already observed. Actions: `get_order_status`, `get_product_info`, `check_return_eligibility`, `search_knowledge`, `ask_clarification`, `final_answer`.
