@@ -58,20 +58,30 @@ Built from scratch in `eval/` (no evaluation framework). It runs 10 cases throug
 | Average latency | 202.9877 ms |
 | Hard / soft / cascading soft failures | 0 / 0 / 0 |
 
-**Failure log (complete from the eval output):** list each case that missed the expected tool or arguments, with its classification (hard, soft or cascading soft) and the reason.
+**Failure log:** No hard, soft or cascading soft failures occurred in the 10 cases, so the failure log is empty. The 80% tool-call and argument correctness is not a failure rate: the two missing-information cases correctly end in `clarification_required` with no tool call or arguments to score. Expected-versus-actual trajectories for every case are in `eval/results.json`.
 
-Run the harness from the project root with the virtual environment active (see `eval/`). Run the automated tests with `pytest -q`.
+Run from the project root with the virtual environment active:
+
+```powershell
+python -m eval.harness
+python -m eval.failure_injection
+pytest -q
+```
+
+Per-case results are in `eval/results.json`, the summary table in `eval/RESULTS.md`, and the failure-injection outcomes in `eval/failure_results.json`.
 
 ## Additional Requirements
 
 **1. Skill vs Agent.** A Skill could hold the instructions for looking up an order or product, but it cannot decide mid-task whether the next step is a policy search, another tool or a clarification question, so the decision loop is an agent and the individual lookups stay deterministic tools.
 
-**2. Token and cost accounting.** `AgentState` records `total_tokens`, and each trajectory step records the tokens it used. The harness reports tokens per query, so the extra cost of additional iterations is visible: a one-step query needs one decision, a multi-step query needs one per action. There is no multi-agent system, so there is no multi-agent comparison.
+**2. Token and cost accounting.** `AgentState` records `total_tokens`, and every trajectory step records input, output and total tokens; the harness reports tokens per query (average 1,976.3). The counts are estimates (`estimated: true`) because the evaluation uses the deterministic mock provider instead of live Gemini usage. A W15 token baseline could not be measured because Gemini quota was unavailable during evaluation (`eval/w15_w16_comparison.json`), so the extra cost of additional iterations is shown by comparing tokens with trajectory length across cases in `eval/results.json`. There is no multi-agent system, so there is no multi-agent comparison.
 
-**3. Failure injection.** Three failures are injected and covered by the automated tests:
-- *Order tool unavailable:* the exception is caught by the executor and recorded as a structured failure observation. No order data is invented, and the answer says the order status could not be verified.
-- *Malformed tool response:* the unexpected structure is not treated as evidence. The agent gives a safe answer with no invented product details.
-- *Retrieval timeout:* the timeout is recorded as a failure observation. No policy text is invented, and the answer says the policy could not be verified.
+**3. Failure injection.** Three failures were injected (`eval/failure_injection.py`, results in `eval/failure_results.json`). In every case the agent stopped after one failed action and finished in two iterations, without retrying or inventing data:
+- *Order tool unavailable* ("What is the status of ORD-1003?"): the executor recorded the failed call (`Injected failure: order service unavailable.`) as a structured observation, and the next decision was `final_answer`. Answer: "I could not verify the order status because the order service is unavailable." (about 1,786 estimated tokens)
+- *Malformed tool response* ("Tell me about product PROD-001."): the unexpected structure was not treated as verified product data. Answer: "I could not safely verify the product information." (about 1,792 tokens)
+- *Retrieval timeout* ("What is the return policy?"): the timeout (`Injected failure: retrieval service timeout.`) was recorded and no policy text was invented. Answer: "I could not verify the return policy because the knowledge retrieval service timed out." (about 1,793 tokens)
+
+The decisions in these runs come from the scripted mock provider, so they test how the system handles failure observations, not how a live model would judge them.
 
 **4. Tool vs Agent boundary.** The knowledge retrieval layer is internally multi-step (query embedding, similarity search, top-k selection), but it is modeled as one bounded tool call, `search_knowledge`, that returns compact evidence or a single structured failure. It needs no independent decisions or shared state with the agent, so an agent-to-agent interaction would add coordination cost and failure modes without benefit. The transactional tools are modeled the same way.
 
