@@ -1,0 +1,188 @@
+[
+  {
+    "name": "tool_unavailable",
+    "query": "What is the status of ORD-1003?",
+    "status": "completed",
+    "answer": "I could not verify the order status because the order service is unavailable.",
+    "trajectory": [
+      {
+        "type": "decision",
+        "iteration": 1,
+        "action": "get_order_status",
+        "arguments": {
+          "order_id": "ORD-1003"
+        },
+        "reason": "The order status must be checked.",
+        "confidence": 0.99,
+        "tokens": {
+          "input_tokens": 588,
+          "output_tokens": 34,
+          "total_tokens": 622,
+          "estimated": true
+        }
+      },
+      {
+        "type": "tool_execution",
+        "iteration": 1,
+        "action": "get_order_status",
+        "arguments": {
+          "order_id": "ORD-1003"
+        },
+        "success": false,
+        "latency_ms": 0.001,
+        "error": "Injected failure: order service unavailable."
+      },
+      {
+        "type": "decision",
+        "iteration": 2,
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The failed lookup must not be replaced with an invented fact.",
+        "confidence": 0.9,
+        "tokens": {
+          "input_tokens": 829,
+          "output_tokens": 35,
+          "total_tokens": 864,
+          "estimated": true
+        }
+      },
+      {
+        "type": "final_answer_generation",
+        "iteration": 2,
+        "latency_ms": 0.004,
+        "tokens": {
+          "input_tokens": 280,
+          "output_tokens": 20,
+          "total_tokens": 300,
+          "estimated": true
+        }
+      }
+    ],
+    "tokens": 1786,
+    "latency_ms": 0.231
+  },
+  {
+    "name": "malformed_tool_response",
+    "query": "Tell me about product PROD-001.",
+    "status": "completed",
+    "answer": "I could not safely verify the product information.",
+    "trajectory": [
+      {
+        "type": "decision",
+        "iteration": 1,
+        "action": "get_product_info",
+        "arguments": {
+          "product_id": "PROD-001"
+        },
+        "reason": "Product information is required.",
+        "confidence": 0.99,
+        "tokens": {
+          "input_tokens": 588,
+          "output_tokens": 35,
+          "total_tokens": 623,
+          "estimated": true
+        }
+      },
+      {
+        "type": "tool_execution",
+        "iteration": 1,
+        "action": "get_product_info",
+        "arguments": {
+          "product_id": "PROD-001"
+        },
+        "success": true,
+        "latency_ms": 0.001,
+        "error": null
+      },
+      {
+        "type": "decision",
+        "iteration": 2,
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The malformed response must not be treated as verified product data.",
+        "confidence": 0.9,
+        "tokens": {
+          "input_tokens": 826,
+          "output_tokens": 36,
+          "total_tokens": 862,
+          "estimated": true
+        }
+      },
+      {
+        "type": "final_answer_generation",
+        "iteration": 2,
+        "latency_ms": 0.003,
+        "tokens": {
+          "input_tokens": 294,
+          "output_tokens": 13,
+          "total_tokens": 307,
+          "estimated": true
+        }
+      }
+    ],
+    "tokens": 1792,
+    "latency_ms": 0.138
+  },
+  {
+    "name": "retrieval_timeout",
+    "query": "What is the return policy?",
+    "status": "completed",
+    "answer": "I could not verify the return policy because the knowledge retrieval service timed out.",
+    "trajectory": [
+      {
+        "type": "decision",
+        "iteration": 1,
+        "action": "search_knowledge",
+        "arguments": {
+          "query": "return policy"
+        },
+        "reason": "The request requires knowledge-base evidence.",
+        "confidence": 0.99,
+        "tokens": {
+          "input_tokens": 587,
+          "output_tokens": 38,
+          "total_tokens": 625,
+          "estimated": true
+        }
+      },
+      {
+        "type": "tool_execution",
+        "iteration": 1,
+        "action": "search_knowledge",
+        "arguments": {
+          "query": "return policy"
+        },
+        "success": false,
+        "latency_ms": 0.001,
+        "error": "Injected failure: retrieval service timeout."
+      },
+      {
+        "type": "decision",
+        "iteration": 2,
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The retrieval failure must not result in a fabricated policy.",
+        "confidence": 0.9,
+        "tokens": {
+          "input_tokens": 832,
+          "output_tokens": 35,
+          "total_tokens": 867,
+          "estimated": true
+        }
+      },
+      {
+        "type": "final_answer_generation",
+        "iteration": 2,
+        "latency_ms": 0.003,
+        "tokens": {
+          "input_tokens": 279,
+          "output_tokens": 22,
+          "total_tokens": 301,
+          "estimated": true
+        }
+      }
+    ],
+    "tokens": 1793,
+    "latency_ms": 0.106
+  }
+]

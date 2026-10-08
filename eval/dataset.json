@@ -1,0 +1,346 @@
+﻿[
+  {
+    "id": "simple_order_status",
+    "category": "simple_lookup",
+    "query": "What is the status of order ORD-1003?",
+    "decisions": [
+      {
+        "action": "get_order_status",
+        "arguments": {
+          "order_id": "ORD-1003"
+        },
+        "reason": "The customer explicitly requested the status of this order.",
+        "confidence": 0.99
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The order status has been verified.",
+        "confidence": 0.99
+      }
+    ],
+    "final_answer": "Order ORD-1003 has been verified successfully.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "get_order_status"
+    ],
+    "expected_arguments": [
+      {
+        "order_id": "ORD-1003"
+      }
+    ],
+    "max_iterations": 3
+  },
+  {
+    "id": "simple_product_lookup",
+    "category": "simple_lookup",
+    "query": "Tell me about product PROD-001.",
+    "decisions": [
+      {
+        "action": "get_product_info",
+        "arguments": {
+          "product_id": "PROD-001"
+        },
+        "reason": "The customer requested information about a specific product.",
+        "confidence": 0.99
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The product information has been retrieved.",
+        "confidence": 0.99
+      }
+    ],
+    "final_answer": "Product PROD-001 information has been verified.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "get_product_info"
+    ],
+    "expected_arguments": [
+      {
+        "product_id": "PROD-001"
+      }
+    ],
+    "max_iterations": 3
+  },
+  {
+    "id": "return_eligibility",
+    "category": "transactional",
+    "query": "Can I return order ORD-1003?",
+    "decisions": [
+      {
+        "action": "check_return_eligibility",
+        "arguments": {
+          "order_id": "ORD-1003"
+        },
+        "reason": "Return eligibility must be checked for the requested order.",
+        "confidence": 0.99
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "Return eligibility has been verified.",
+        "confidence": 0.99
+      }
+    ],
+    "final_answer": "The return eligibility for ORD-1003 has been verified.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "check_return_eligibility"
+    ],
+    "expected_arguments": [
+      {
+        "order_id": "ORD-1003"
+      }
+    ],
+    "max_iterations": 3
+  },
+  {
+    "id": "multi_step_return_policy",
+    "category": "cross_source",
+    "query": "Can I return ORD-1003, and what does the return policy say?",
+    "decisions": [
+      {
+        "action": "check_return_eligibility",
+        "arguments": {
+          "order_id": "ORD-1003"
+        },
+        "reason": "The order-specific eligibility must be established first.",
+        "confidence": 0.98
+      },
+      {
+        "action": "search_knowledge",
+        "arguments": {
+          "query": "return policy eligibility and return requirements"
+        },
+        "reason": "The customer also asked for the documented return policy.",
+        "confidence": 0.97
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "Both order-specific and policy evidence are available.",
+        "confidence": 0.98
+      }
+    ],
+    "final_answer": "The order-specific return eligibility and documented return policy have both been verified.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "check_return_eligibility",
+      "search_knowledge"
+    ],
+    "expected_arguments": [
+      {
+        "order_id": "ORD-1003"
+      },
+      {
+        "query": "return policy eligibility and return requirements"
+      }
+    ],
+    "max_iterations": 4
+  },
+  {
+    "id": "order_and_policy",
+    "category": "cross_source",
+    "query": "What is the status of ORD-1003 and what is the shipping policy?",
+    "decisions": [
+      {
+        "action": "get_order_status",
+        "arguments": {
+          "order_id": "ORD-1003"
+        },
+        "reason": "The order status is one part of the request.",
+        "confidence": 0.98
+      },
+      {
+        "action": "search_knowledge",
+        "arguments": {
+          "query": "shipping policy"
+        },
+        "reason": "The second part requires documented policy information.",
+        "confidence": 0.98
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "Both requested evidence sources are available.",
+        "confidence": 0.98
+      }
+    ],
+    "final_answer": "The order status and shipping policy have been verified.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "get_order_status",
+      "search_knowledge"
+    ],
+    "expected_arguments": [
+      {
+        "order_id": "ORD-1003"
+      },
+      {
+        "query": "shipping policy"
+      }
+    ],
+    "max_iterations": 4
+  },
+  {
+    "id": "missing_order_id",
+    "category": "clarification",
+    "query": "Can you check the status of my order?",
+    "decisions": [
+      {
+        "action": "ask_clarification",
+        "arguments": {
+          "question": "Could you provide the order ID so I can check its status?"
+        },
+        "reason": "An order identifier is required to perform the lookup.",
+        "confidence": 0.99
+      }
+    ],
+    "final_answer": "Could you provide the order ID so I can check its status?",
+    "expected_status": "clarification_required",
+    "expected_actions": [
+      "ask_clarification"
+    ],
+    "expected_arguments": [
+      {
+        "question": "Could you provide the order ID so I can check its status?"
+      }
+    ],
+    "max_iterations": 2
+  },
+  {
+    "id": "missing_product_id",
+    "category": "clarification",
+    "query": "Tell me more about the product I bought.",
+    "decisions": [
+      {
+        "action": "ask_clarification",
+        "arguments": {
+          "question": "Could you provide the product ID?"
+        },
+        "reason": "The product cannot be identified from the request.",
+        "confidence": 0.98
+      }
+    ],
+    "final_answer": "Could you provide the product ID?",
+    "expected_status": "clarification_required",
+    "expected_actions": [
+      "ask_clarification"
+    ],
+    "expected_arguments": [
+      {
+        "question": "Could you provide the product ID?"
+      }
+    ],
+    "max_iterations": 2
+  },
+  {
+    "id": "unknown_order",
+    "category": "missing_information",
+    "query": "What is the status of order ORD-9999?",
+    "decisions": [
+      {
+        "action": "get_order_status",
+        "arguments": {
+          "order_id": "ORD-9999"
+        },
+        "reason": "The order ID was explicitly provided and should be checked.",
+        "confidence": 0.99
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The lookup result must be reported without inventing an order.",
+        "confidence": 0.95
+      }
+    ],
+    "final_answer": "Order ORD-9999 could not be verified because it was not found.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "get_order_status"
+    ],
+    "expected_arguments": [
+      {
+        "order_id": "ORD-9999"
+      }
+    ],
+    "max_iterations": 3
+  },
+  {
+    "id": "rag_policy",
+    "category": "knowledge_search",
+    "query": "What is the return policy?",
+    "decisions": [
+      {
+        "action": "search_knowledge",
+        "arguments": {
+          "query": "return policy"
+        },
+        "reason": "The request is about documented policy information.",
+        "confidence": 0.99
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The relevant policy evidence has been retrieved.",
+        "confidence": 0.99
+      }
+    ],
+    "final_answer": "The documented return policy has been retrieved.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "search_knowledge"
+    ],
+    "expected_arguments": [
+      {
+        "query": "return policy"
+      }
+    ],
+    "max_iterations": 3
+  },
+  {
+    "id": "order_product_combination",
+    "category": "cross_source",
+    "query": "What is the status of ORD-1003 and what product is associated with it?",
+    "decisions": [
+      {
+        "action": "get_order_status",
+        "arguments": {
+          "order_id": "ORD-1003"
+        },
+        "reason": "The order status must be established first.",
+        "confidence": 0.97
+      },
+      {
+        "action": "get_product_info",
+        "arguments": {
+          "product_id": "PROD-001"
+        },
+        "reason": "Product information is required for the second part of the request.",
+        "confidence": 0.96
+      },
+      {
+        "action": "final_answer",
+        "arguments": {},
+        "reason": "The requested order and product evidence are available.",
+        "confidence": 0.97
+      }
+    ],
+    "final_answer": "The order and product information have been verified.",
+    "expected_status": "completed",
+    "expected_actions": [
+      "get_order_status",
+      "get_product_info"
+    ],
+    "expected_arguments": [
+      {
+        "order_id": "ORD-1003"
+      },
+      {
+        "product_id": "PROD-001"
+      }
+    ],
+    "max_iterations": 4
+  }
+]

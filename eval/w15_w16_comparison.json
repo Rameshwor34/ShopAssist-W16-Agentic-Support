@@ -1,0 +1,20 @@
+﻿{
+  "comparison": {
+    "W15": {
+      "architecture": "RAG-oriented assistant with application-defined routing",
+      "agentic_loop": false,
+      "dynamic_next_action": false,
+      "multiple_iterations": false,
+      "provider_status": "Gemini quota unavailable during evaluation",
+      "live_metrics": null
+    },
+    "W16": {
+      "architecture": "Single bounded adaptive agent",
+      "agentic_loop": true,
+      "dynamic_next_action": true,
+      "multiple_iterations": true,
+      "provider_status": "Deterministic mock provider used for controller regression",
+      "metrics_source": "eval/results.json"
+    }
+  }
+}
