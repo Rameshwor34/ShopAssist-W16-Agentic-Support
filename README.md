@@ -1,3 +1,81 @@
+<!-- W16-SECTION -->
+# ShopAssist AI — W16: Agentic Support Assistant
+
+W16 extends the W15 assistant with a bounded agentic loop. The W15 `POST /chat` pipeline is unchanged; the new feature is served by `POST /agent/chat`.
+
+![W16 architecture](docs/architecture.png)
+
+Further detail: [`docs/W16_AGENT_DESIGN.md`](docs/W16_AGENT_DESIGN.md) and [`docs/W16_ARCHITECTURE.md`](docs/W16_ARCHITECTURE.md).
+
+## Agentic Feature
+
+**Cross-source verification.** The agent answers queries that need order data, product data, return eligibility and policy knowledge, choosing each next action from what it has already observed. Actions: `get_order_status`, `get_product_info`, `check_return_eligibility`, `search_knowledge`, `ask_clarification`, `final_answer`.
+
+**Why a fixed pipeline is not enough:** a fixed pipeline must choose its sources before seeing any result, but whether to search the return policy, call another tool or ask the user for a missing ID depends on what the previous step returned.
+
+**Loop and stopping conditions:** the loop can run several iterations per request and ends on `final_answer`, `ask_clarification`, a fatal failure, or `MAX_ITERATIONS = 6`. The application enforces the limit, not the model.
+
+Example request:
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:8002/agent/chat -Method Post -ContentType "application/json" -Body '{"message":"Can I return ORD-1003, and what does the return policy say?"}'
+```
+
+The response contains the answer plus the action trajectory, token usage, latency and final status.
+
+## a. Context Engineering Technique
+
+**Technique:** structured evidence compaction, with retrieval results capped to a small top-k before they are compacted.
+
+**Where it is applied:** after every executed action, in `backend/agents/evidence.py`, before the result is written into `AgentState`. The decision engine never sees raw tool output.
+
+**Problem it solves:** a raw order record carries many fields the next decision does not need (customer, items, address, internal metadata), and retrieval returns text passages. Appending those raw outputs on every iteration would make the prompt grow with each of up to six steps, spend tokens on irrelevant fields, and expose data the model has no reason to see. Compaction keeps only the facts and sources needed for later decisions (for example `order_id`, `status`, `sources: ["orders.json"]`).
+
+## b. Agentic Pattern
+
+**Single-agent loop.** The task is sequential evidence gathering where each step depends on the previous result, so there is nothing to run in parallel. All steps use the same evidence, so separate agents would gain no context isolation. The specialised work is done by deterministic tools, not by separate reasoning roles, so specialization gives no benefit either.
+
+Against the five structural failures:
+- **Context saturation:** avoided, because one compact `AgentState` holds the evidence instead of several overlapping agent contexts.
+- **Sequential bottleneck:** multiple agents would add hand-offs along a chain that is already sequential.
+- **Skill dilution:** not a risk, because the domain is a single narrow support task.
+- **Self-verification paradox:** avoided, because tool results are deterministic and authoritative rather than one agent re-checking another's claims.
+- **Single point of failure:** accepted, since there is one decision engine. It is mitigated by schema validation, an action allowlist, the iteration cap and safe failure handling.
+
+## c. Evaluation Harness
+
+Built from scratch in `eval/` (no evaluation framework). It runs 10 cases through the real `AgenticService`, executor, evidence compaction and tools, with decisions supplied by a deterministic mock provider so results do not depend on Gemini quota. It therefore tests the loop mechanics and failure handling, not live Gemini decision quality.
+
+| Metric | Result |
+| --- | --- |
+| Total cases | 10 |
+| Task completion rate | 100% |
+| Tool-call correctness | 80% |
+| Argument correctness | 80% |
+| Average trajectory length | 2.1 |
+| Average tool calls | 1.1 |
+| Average tokens per query | 1976.3 |
+| Average latency | 202.9877 ms |
+| Hard / soft / cascading soft failures | 0 / 0 / 0 |
+
+**Failure log (complete from the eval output):** list each case that missed the expected tool or arguments, with its classification (hard, soft or cascading soft) and the reason.
+
+Run the harness from the project root with the virtual environment active (see `eval/`). Run the automated tests with `pytest -q`.
+
+## Additional Requirements
+
+**1. Skill vs Agent.** A Skill could hold the instructions for looking up an order or product, but it cannot decide mid-task whether the next step is a policy search, another tool or a clarification question, so the decision loop is an agent and the individual lookups stay deterministic tools.
+
+**2. Token and cost accounting.** `AgentState` records `total_tokens`, and each trajectory step records the tokens it used. The harness reports tokens per query, so the extra cost of additional iterations is visible: a one-step query needs one decision, a multi-step query needs one per action. There is no multi-agent system, so there is no multi-agent comparison.
+
+**3. Failure injection.** Three failures are injected and covered by the automated tests:
+- *Order tool unavailable:* the exception is caught by the executor and recorded as a structured failure observation. No order data is invented, and the answer says the order status could not be verified.
+- *Malformed tool response:* the unexpected structure is not treated as evidence. The agent gives a safe answer with no invented product details.
+- *Retrieval timeout:* the timeout is recorded as a failure observation. No policy text is invented, and the answer says the policy could not be verified.
+
+**4. Tool vs Agent boundary.** The knowledge retrieval layer is internally multi-step (query embedding, similarity search, top-k selection), but it is modeled as one bounded tool call, `search_knowledge`, that returns compact evidence or a single structured failure. It needs no independent decisions or shared state with the agent, so an agent-to-agent interaction would add coordination cost and failure modes without benefit. The transactional tools are modeled the same way.
+
+---
 # ShopAssist AI
 
 > AI-powered customer-support assistant combining LLMs, hybrid intent routing, specialized agents, RAG, tool calling, caching, deterministic fallbacks, FastAPI, Streamlit, and Docker.
