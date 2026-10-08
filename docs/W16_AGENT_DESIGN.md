@@ -1,4 +1,4 @@
-﻿W16 Agent Design â€” ShopAssist AI
+W16 Agent Design — ShopAssist AI
 1. Overview
 
 Week 16 extends the Week 15 ShopAssist AI assistant with a bounded agentic loop.
@@ -77,9 +77,9 @@ Can I return ORD-1003, and what does the return policy say?
 the agent may decide:
 
 check_return_eligibility
-        â†“
+        ↓
 search_knowledge
-        â†“
+        ↓
 final_answer
 
 However, this sequence is not hard-coded. A different query can produce a different trajectory.
@@ -548,7 +548,7 @@ Where is order ORD-1003?
 Trajectory:
 
 get_order_status
-        â†“
+        ↓
 final_answer
 Product query
 
@@ -559,7 +559,7 @@ Tell me about PROD-101.
 Trajectory:
 
 get_product_info
-        â†“
+        ↓
 final_answer
 Return query
 
@@ -570,7 +570,7 @@ Can I return ORD-1003?
 Trajectory:
 
 check_return_eligibility
-        â†“
+        ↓
 final_answer
 Multi-step query
 
@@ -581,9 +581,9 @@ Can I return ORD-1003, and what does the return policy say?
 Possible trajectory:
 
 check_return_eligibility
-        â†“
+        ↓
 search_knowledge
-        â†“
+        ↓
 final_answer
 
 The important point is that the second action is selected after observing the first result.
@@ -605,25 +605,25 @@ The agent does not invent an order ID.
 The implementation is divided into focused components:
 
 backend/
-â”œâ”€â”€ agents/
-â”‚   â”œâ”€â”€ agent.py
-â”‚   â”œâ”€â”€ evidence.py
-â”‚   â”œâ”€â”€ executor.py
-â”‚   â”œâ”€â”€ prompts.py
-â”‚   â”œâ”€â”€ schemas.py
-â”‚   â””â”€â”€ state.py
-â”‚
-â”œâ”€â”€ services/
-â”‚   â””â”€â”€ agentic_service.py
-â”‚
-â”œâ”€â”€ tools/
-â”‚   â”œâ”€â”€ definitions.py
-â”‚   â”œâ”€â”€ orders.py
-â”‚   â”œâ”€â”€ products.py
-â”‚   â”œâ”€â”€ returns.py
-â”‚   â””â”€â”€ registry.py
-â”‚
-â””â”€â”€ main.py
+├── agents/
+│   ├── agent.py
+│   ├── evidence.py
+│   ├── executor.py
+│   ├── prompts.py
+│   ├── schemas.py
+│   └── state.py
+│
+├── services/
+│   └── agentic_service.py
+│
+├── tools/
+│   ├── definitions.py
+│   ├── orders.py
+│   ├── products.py
+│   ├── returns.py
+│   └── registry.py
+│
+└── main.py
 
 Responsibilities:
 
@@ -685,15 +685,15 @@ The W16 implementation transforms ShopAssist from a primarily request-response/R
 The defining characteristic is the adaptive loop:
 
 Observe
-   â†“
+   ↓
 Decide
-   â†“
+   ↓
 Act
-   â†“
+   ↓
 Observe Result
-   â†“
+   ↓
 Decide Again
-   â†“
+   ↓
 ...
 
 The system can perform multiple actions when necessary, stop when sufficient evidence is available, request clarification when information is missing, and fail safely when tools or retrieval systems are unavailable.

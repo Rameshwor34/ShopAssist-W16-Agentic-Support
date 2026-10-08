@@ -1,5 +1,4 @@
-﻿````markdown
-# W16 Architecture â€” ShopAssist AI
+# W16 Architecture — ShopAssist AI
 
 ## 1. System Overview
 
@@ -33,8 +32,7 @@ flowchart TD
 
     K --> N[Return Clarification]
     L --> O[User Response]
-````
-
+```
 ---
 
 ## 2. Core Agentic Loop
@@ -43,21 +41,21 @@ The central W16 behavior is an iterative decision loop.
 
 ```text
 User Query
-    â†“
+    ↓
 Initialize AgentState
-    â†“
+    ↓
 AgentDecisionEngine
-    â†“
+    ↓
 Validate Decision
-    â†“
+    ↓
 Execute Selected Action
-    â†“
+    ↓
 Compact Result into Evidence
-    â†“
+    ↓
 Update AgentState
-    â†“
+    ↓
 AgentDecisionEngine
-    â†“
+    ↓
 Execute Another Action / Clarify / Finish
 ```
 
@@ -69,16 +67,16 @@ For example:
 User:
 "Can I return ORD-1003 and what does the return policy say?"
 
-        â†“
+        ↓
 
 check_return_eligibility
-        â†“
+        ↓
 observe result
-        â†“
+        ↓
 search_knowledge
-        â†“
+        ↓
 observe result
-        â†“
+        ↓
 final_answer
 ```
 
@@ -86,7 +84,7 @@ Another request may require only one action:
 
 ```text
 get_order_status
-        â†“
+        ↓
 final_answer
 ```
 
@@ -96,29 +94,29 @@ final_answer
 
 ```text
 backend/
-â”‚
-â”œâ”€â”€ agents/
-â”‚   â”œâ”€â”€ agent.py
-â”‚   â”œâ”€â”€ evidence.py
-â”‚   â”œâ”€â”€ executor.py
-â”‚   â”œâ”€â”€ prompts.py
-â”‚   â”œâ”€â”€ schemas.py
-â”‚   â””â”€â”€ state.py
-â”‚
-â”œâ”€â”€ services/
-â”‚   â””â”€â”€ agentic_service.py
-â”‚
-â”œâ”€â”€ tools/
-â”‚   â”œâ”€â”€ definitions.py
-â”‚   â”œâ”€â”€ orders.py
-â”‚   â”œâ”€â”€ products.py
-â”‚   â”œâ”€â”€ returns.py
-â”‚   â””â”€â”€ registry.py
-â”‚
-â”œâ”€â”€ llm/
-â”‚   â””â”€â”€ gemini_provider.py
-â”‚
-â””â”€â”€ main.py
+│
+├── agents/
+│   ├── agent.py
+│   ├── evidence.py
+│   ├── executor.py
+│   ├── prompts.py
+│   ├── schemas.py
+│   └── state.py
+│
+├── services/
+│   └── agentic_service.py
+│
+├── tools/
+│   ├── definitions.py
+│   ├── orders.py
+│   ├── products.py
+│   ├── returns.py
+│   └── registry.py
+│
+├── llm/
+│   └── gemini_provider.py
+│
+└── main.py
 ```
 
 ---
@@ -217,13 +215,13 @@ The executor maps validated actions to deterministic application operations.
 
 ```text
 Agent Action
-     â†“
+     ↓
 Validation
-     â†“
+     ↓
 Allowlist
-     â†“
+     ↓
 Executor
-     â†“
+     ↓
 Tool
 ```
 
@@ -256,10 +254,10 @@ The existing W15 transactional tools are registered through the tool registry.
 
 ```text
 TOOL_REGISTRY
-    â”‚
-    â”œâ”€â”€ get_order_status
-    â”œâ”€â”€ get_product_info
-    â””â”€â”€ check_return_eligibility
+    │
+    ├── get_order_status
+    ├── get_product_info
+    └── check_return_eligibility
 ```
 
 Knowledge retrieval is invoked separately through the RAG retrieval layer.
@@ -272,13 +270,13 @@ Raw tool results are converted into compact observations.
 
 ```text
 Tool Result
-    â†“
+    ↓
 Evidence Compaction
-    â†“
+    ↓
 Structured Observation
-    â†“
+    ↓
 AgentState.evidence
-    â†“
+    ↓
 Next Agent Decision
 ```
 
@@ -310,13 +308,13 @@ For retrieval results, the system also limits the amount of retrieved informatio
 
 ```text
 Raw Retrieval
-     â†“
+     ↓
 Top-k Results
-     â†“
+     ↓
 Relevant Evidence
-     â†“
+     ↓
 Compact Observation
-     â†“
+     ↓
 Agent Context
 ```
 
@@ -329,24 +327,24 @@ This keeps the context bounded and reduces unnecessary token usage.
 The model controls the decision layer.
 
 ```text
-                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                 â”‚       Agent          â”‚
-                 â”‚                      â”‚
-                 â”‚ "What should happen  â”‚
-                 â”‚      next?"          â”‚
-                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                            â”‚
-                            â–¼
-                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                 â”‚   Allowed Actions    â”‚
-                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                            â”‚
-                            â–¼
-                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                 â”‚    Application       â”‚
-                 â”‚                      â”‚
-                 â”‚ Validate + Execute   â”‚
-                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                 ┌──────────────────────┐
+                 │       Agent          │
+                 │                      │
+                 │ "What should happen  │
+                 │      next?"          │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │   Allowed Actions    │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │    Application       │
+                 │                      │
+                 │ Validate + Execute   │
+                 └──────────────────────┘
 ```
 
 This separation prevents the LLM from directly controlling application internals.
@@ -389,13 +387,13 @@ Therefore, the system cannot continue indefinitely.
 W16 uses a single-agent architecture.
 
 ```text
-                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                 â”‚   Single Agent  â”‚
-                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                          â”‚
-            â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-            â”‚             â”‚             â”‚
-            â–¼             â–¼             â–¼
+                 ┌─────────────────┐
+                 │   Single Agent  │
+                 └────────┬────────┘
+                          │
+            ┌─────────────┼─────────────┐
+            │             │             │
+            ▼             ▼             ▼
          Orders        Products       RAG
 ```
 
@@ -419,15 +417,15 @@ Tool failures are converted into structured observations.
 
 ```text
 Tool
- â†“
+ ↓
 Exception / Invalid Result
- â†“
+ ↓
 Executor catches failure
- â†“
+ ↓
 Structured failure observation
- â†“
+ ↓
 AgentState
- â†“
+ ↓
 Safe response
 ```
 
@@ -449,13 +447,13 @@ When required information is missing:
 
 ```text
 User Query
-    â†“
+    ↓
 Agent Decision
-    â†“
+    ↓
 ask_clarification
-    â†“
+    ↓
 AgenticService
-    â†“
+    ↓
 Clarification Response
 ```
 
@@ -479,11 +477,11 @@ When sufficient evidence has been collected:
 
 ```text
 Agent
-  â†“
+  ↓
 final_answer
-  â†“
+  ↓
 Final Answer Generation
-  â†“
+  ↓
 User
 ```
 
@@ -497,25 +495,25 @@ A complete request follows:
 
 ```text
 1. User sends query
-        â†“
+        ↓
 2. FastAPI receives request
-        â†“
+        ↓
 3. AgenticService creates AgentState
-        â†“
+        ↓
 4. AgentDecisionEngine selects action
-        â†“
+        ↓
 5. Decision is schema-validated
-        â†“
+        ↓
 6. Executor runs allowed action
-        â†“
+        ↓
 7. Result is compacted into evidence
-        â†“
+        ↓
 8. AgentState is updated
-        â†“
+        ↓
 9. Agent decides again
-        â†“
+        ↓
 10. Loop continues until termination
-        â†“
+        ↓
 11. Final response returned
 ```
 
@@ -546,19 +544,19 @@ The evaluation harness uses a deterministic mock provider.
 
 ```text
 Evaluation Dataset
-        â†“
+        ↓
 Evaluation Harness
-        â†“
+        ↓
 AgenticService
-        â†“
+        ↓
 AgentDecisionEngine
-        â†“
+        ↓
 Mock Provider
-        â†“
+        ↓
 AgentActionExecutor
-        â†“
+        ↓
 Tools
-        â†“
+        ↓
 Evaluation Metrics
 ```
 
@@ -583,14 +581,14 @@ Cascading Soft Failures
 Failure injection replaces normal tool behavior with controlled failures.
 
 ```text
-                â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                â”‚ Failure Test    â”‚
-                â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                         â†“
+                ┌─────────────────┐
+                │ Failure Test    │
+                └────────┬────────┘
+                         ↓
                  AgentActionExecutor
-                         â†“
-              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-              â†“          â†“          â†“
+                         ↓
+              ┌──────────┼──────────┐
+              ↓          ↓          ↓
           Unavailable  Malformed   Timeout
              Tool       Result    Retrieval
 ```
@@ -599,19 +597,19 @@ The objective is to verify that the agent fails safely instead of hallucinating 
 
 ---
 
-## 19. W15 â†’ W16 Evolution
+## 19. W15 → W16 Evolution
 
 ### W15
 
 ```text
 User
- â†“
+ ↓
 FastAPI
- â†“
+ ↓
 Intent / RAG
- â†“
+ ↓
 Tool or Retrieval
- â†“
+ ↓
 Response
 ```
 
@@ -619,21 +617,21 @@ Response
 
 ```text
 User
- â†“
+ ↓
 FastAPI
- â†“
+ ↓
 Agent
- â†“
+ ↓
 Decision
- â†“
+ ↓
 Tool / RAG
- â†“
+ ↓
 Evidence
- â†“
+ ↓
 Agent
- â†“
+ ↓
 Decision Again
- â†“
+ ↓
 Tool / RAG / Clarification / Final Answer
 ```
 
@@ -645,17 +643,15 @@ The major architectural change is the introduction of a stateful, bounded decisi
 
 The W16 architecture follows these principles:
 
-1. **Dynamic action selection** â€” the next action depends on previous results.
-2. **Bounded execution** â€” maximum six iterations.
-3. **Deterministic tools** â€” business operations remain controlled by application code.
-4. **Structured decisions** â€” model output is schema-validated.
-5. **Evidence-based responses** â€” final answers rely on collected evidence.
-6. **Context compaction** â€” raw results are converted into concise observations.
-7. **Safe failure handling** â€” unavailable or malformed tools do not cause hallucinated answers.
-8. **Explicit clarification** â€” missing information results in a clarification request.
-9. **Measurable behavior** â€” trajectories, tokens, latency, and failures are recorded.
-10. **Single-agent simplicity** â€” one focused agent is used instead of unnecessary multi-agent coordination.
+1. **Dynamic action selection** — the next action depends on previous results.
+2. **Bounded execution** — maximum six iterations.
+3. **Deterministic tools** — business operations remain controlled by application code.
+4. **Structured decisions** — model output is schema-validated.
+5. **Evidence-based responses** — final answers rely on collected evidence.
+6. **Context compaction** — raw results are converted into concise observations.
+7. **Safe failure handling** — unavailable or malformed tools do not cause hallucinated answers.
+8. **Explicit clarification** — missing information results in a clarification request.
+9. **Measurable behavior** — trajectories, tokens, latency, and failures are recorded.
+10. **Single-agent simplicity** — one focused agent is used instead of unnecessary multi-agent coordination.
 
 ```
-```
-
